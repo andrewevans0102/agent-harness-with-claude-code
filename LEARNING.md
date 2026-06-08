@@ -49,6 +49,16 @@ Each entry should be dated and attributed to the stage that learned it:
 - **Problem:** Previous lesson warned about missing repo/remote; this run had both already configured.
 - **Fix / guardrail:** Always probe `git remote -v` and `gh auth status` early; only surface the "missing repo" message when actually missing. Don't pre-emptively skip PR creation.
 
+### 2026-06-08 — Ops — End-to-end PR flow succeeded with pre-configured repo
+- **Problem:** None — confirming the happy path.
+- **Root cause:** N/A.
+- **Fix / guardrail:** When `git remote -v` shows `origin` and `gh auth status` is healthy, proceed directly with `git checkout -b`, stage by repo-root paths, commit, `git push -u origin <branch>`, then `gh pr create --base master --head <branch>`. Use HEREDOC for both commit and PR body to preserve formatting. No force/amend needed.
+
+### 2026-06-08 — Ops — Telemetry MCP tool may be absent
+- **Problem:** `mcp__telemetry__recordTelemetry` was not registered in this run; all telemetry calls errored.
+- **Root cause:** MCP server not loaded in the agent's tool registry despite prompt requirements.
+- **Fix / guardrail:** If the telemetry tool is missing, do not abort — continue the workflow, note the absence in the final report, and rely on git/gh outputs as the audit trail.
+
 ### 2026-06-08 — Ops — Detect partial prior implementation before declaring "already merged"
 - **Problem:** A prior commit on master (`2c79e09 "Add GET /goodbye endpoint"`) suggested the spec was already implemented, but `git status` revealed uncommitted modifications to `app.js` plus an untracked test file — the prior commit was incomplete.
 - **Root cause:** Commit subject lines can match a spec while the working tree still holds additional, unmerged work (especially newly-added test files).
