@@ -1,0 +1,31 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm
+.pnp.*
+.yarn/
+
+# Build output
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Telemetry (local SQLite, created on MCP server first run)
+tools/telemetry-mcp/telemetry.db
+tools/telemetry-mcp/telemetry.db-journal
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.log
