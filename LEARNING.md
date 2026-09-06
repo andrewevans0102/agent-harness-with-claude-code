@@ -54,3 +54,13 @@ Each entry should be dated and attributed to the stage that learned it:
 - **Root cause:** Commit subject lines can match a spec while the working tree still holds additional, unmerged work (especially newly-added test files).
 - **Fix / guardrail:** Always inspect `git status` (working tree + untracked) in addition to `git log` before concluding a spec is already merged. Only skip branch/commit/PR when the tree is clean AND the diff vs. spec is empty.
 
+### 2026-09-06 — Ops — Telemetry MCP server unreachable for entire run
+- **Problem:** `mcp__telemetry__recordTelemetry` was unreachable (connection closed / tool not present) for the entire Dev, QE, and Ops stages of this run, so no telemetry events could be recorded despite the mandate to log every action.
+- **Root cause:** The telemetry MCP server was down or not connected for this session; the harness did not surface this until agents tried to call the tool.
+- **Fix / guardrail:** Check telemetry server connectivity at harness start (e.g. a single lightweight test call). If it is down, agents should proceed without blocking on it — telemetry is an audit trail, not a task gate — but must clearly flag the outage in their report/summary so the gap is visible to the operator, as was done here.
+
+### 2026-09-06 — Ops — `origin` remote may be read-only; fall back to a fork
+- **Problem:** `git push -u origin <branch>` was rejected with `403 Permission ... denied`. `gh repo view --json viewerPermission` showed only `READ` access for the authenticated account on the configured `origin` remote, even though `gh auth status` showed a valid, logged-in token.
+- **Root cause:** Being authenticated via `gh auth status` does not imply write/push access to a given repository; `origin` can point at an upstream the account can only read (e.g. a shared/template harness repo).
+- **Fix / guardrail:** If push to `origin` is rejected with 403, check `gh repo view <owner>/<repo> --json viewerPermission` before giving up. If permission is read-only, run `gh repo fork <owner>/<repo>` (without `--remote`, to avoid mutating `origin`), add the fork as a separate remote (e.g. `fork`), push the feature branch there, and open the PR with `gh pr create --repo <upstream> --base master --head <you>:<branch>`. Also check for stale same-named branches left on the fork by earlier runs (`git fetch fork <branch>`) — rename the local branch (e.g. append a date suffix) rather than force-pushing over them, since force-push is prohibited.
+
